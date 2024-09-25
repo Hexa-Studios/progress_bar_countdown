@@ -10,6 +10,8 @@ Create an animated linear progress bar countdown timer using Progress Bar Countd
 * Option to show/hide countdown text
 * Left-to-right or right-to-left progress direction
 
+![Example Progress Bar Countdown GIF](./docs/progress_bar_countdown_gif.gif)
+
 ## Getting Started
 
 To use this plugin, add `progress_bar_countdown` as a [dependency in your pubspec.yaml file](https://flutter.dev/docs/development/packages-and-plugins/using-packages).
