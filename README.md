@@ -10,7 +10,7 @@ Create an animated linear progress bar countdown timer using Progress Bar Countd
 * Option to show/hide countdown text
 * Left-to-right or right-to-left progress direction
 
-![Example Progress Bar Countdown GIF](./docs/progress_bar_countdown_gif.gif)
+![Example Progress Bar Countdown GIF](https://github.com/Hexa-Studios/progress_bar_countdown/blob/main/doc/progress_bar_countdown_gif.gif?raw=true)
 
 ## Getting Started
 
