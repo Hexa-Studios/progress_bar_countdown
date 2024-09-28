@@ -6,10 +6,10 @@ void main() {
   testWidgets('ProgressBarCountdown initializes correctly',
       (WidgetTester tester) async {
     await tester.pumpWidget(
-      MaterialApp(
+      const MaterialApp(
         home: Scaffold(
           body: ProgressBarCountdown(
-            initialDuration: 60,
+            initialDuration: Duration(seconds: 60),
             progressColor: Colors.blue,
             progressBackgroundColor: Colors.grey,
           ),

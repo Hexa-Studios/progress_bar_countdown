@@ -45,7 +45,7 @@ class _MyHomePageState extends State<MyHomePage> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
           ProgressBarCountdown(
-            initialDuration: 10,
+            initialDuration: const Duration(seconds: 20),
             height: 150,
             controller: controller,
             hideText: false,
@@ -60,6 +60,20 @@ class _MyHomePageState extends State<MyHomePage> {
             onStart: () => {debugPrint("Countdown Started")},
             onComplete: () => {debugPrint("Countdown Completed")},
             onChange: (changeValue) => debugPrint("Change Value: $changeValue"),
+            timeFormatter: (Duration remainingTime) {
+              final minutes = remainingTime.inMinutes
+                  .remainder(60)
+                  .toString()
+                  .padLeft(2, '0');
+              final seconds = remainingTime.inSeconds
+                  .remainder(60)
+                  .toString()
+                  .padLeft(2, '0');
+              final milliseconds = (remainingTime.inMilliseconds % 1000 ~/ 10)
+                  .toString()
+                  .padLeft(2, '0');
+              return '$minutes:$seconds:$milliseconds';
+            },
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -99,7 +113,8 @@ class _MyHomePageState extends State<MyHomePage> {
               Column(
                 children: [
                   IconButton(
-                    onPressed: () => controller.reset(duration: 10.0),
+                    onPressed: () =>
+                        controller.reset(duration: const Duration(seconds: 10)),
                     icon: const Icon(Icons.restore_outlined),
                   ),
                   const Text("Reset")

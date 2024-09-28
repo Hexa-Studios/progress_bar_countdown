@@ -45,7 +45,7 @@ class ProgressBarCountdownController {
   }
 
   /// This Method Restarts the Progress Countdown Timer
-  void reset({double? duration}) {
+  void reset({Duration? duration}) {
     if (_state != null) {
       _state!._resetTimer(duration: duration);
       isStarted.value = false;
@@ -58,8 +58,8 @@ class ProgressBarCountdownController {
   /// This Method returns the Current Time of Progress Countdown Timer
   String getTime() {
     if (_state != null) {
-      return _state!._remainingSeconds
-          .toStringAsFixed(_state!._remainingSeconds > 1 ? 0 : 1);
+      return _state!._remainingDuration.inMilliseconds
+          .toStringAsFixed(_state!._remainingDuration.inSeconds > 1 ? 0 : 1);
     }
     return "";
   }
@@ -68,7 +68,7 @@ class ProgressBarCountdownController {
 /// Create a Progress Countdown Timer.
 class ProgressBarCountdown extends StatefulWidget {
   /// Countdown Duration in Seconds.
-  final double initialDuration;
+  final Duration initialDuration;
 
   /// Progress Color for Countdown Widget
   final Color progressColor;
@@ -109,26 +109,29 @@ class ProgressBarCountdown extends StatefulWidget {
   /// This Callback will execute when the Countdown Changes.
   final ValueChanged<String>? onChange;
 
-  const ProgressBarCountdown({
-    super.key,
-    required this.initialDuration,
-    required this.progressColor,
-    this.progressBackgroundColor = Colors.white,
-    this.initialTextColor,
-    this.revealedTextColor,
-    this.hideText = false,
-    this.textStyle = const TextStyle(
-      fontSize: 18,
-      fontWeight: FontWeight.bold,
-    ),
-    this.height = 50.0,
-    this.countdownDirection = ProgressBarCountdownAlignment.left,
-    this.controller,
-    this.autoStart = false,
-    this.onComplete,
-    this.onStart,
-    this.onChange,
-  });
+  /// This function can be used to override the default time formatter.
+  final String Function(Duration remainingTime)? timeFormatter;
+
+  const ProgressBarCountdown(
+      {super.key,
+      required this.initialDuration,
+      required this.progressColor,
+      this.progressBackgroundColor = Colors.white,
+      this.initialTextColor,
+      this.revealedTextColor,
+      this.hideText = false,
+      this.textStyle = const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+      ),
+      this.height = 50.0,
+      this.countdownDirection = ProgressBarCountdownAlignment.left,
+      this.controller,
+      this.autoStart = false,
+      this.onComplete,
+      this.onStart,
+      this.onChange,
+      this.timeFormatter});
 
   @override
   _ProgressBarCountdownState createState() => _ProgressBarCountdownState();
@@ -139,8 +142,8 @@ class _ProgressBarCountdownState extends State<ProgressBarCountdown>
   late AnimationController _controller;
   late Animation<double> _animation;
   Timer? _timer;
-  double _remainingSeconds = 0;
-  double _currentDuration = 0;
+  Duration _remainingDuration = const Duration(seconds: 0);
+  Duration _currentDuration = const Duration(seconds: 0);
   bool _isRunning = false;
   ProgressBarCountdownController? _countdownController;
 
@@ -148,10 +151,11 @@ class _ProgressBarCountdownState extends State<ProgressBarCountdown>
   void initState() {
     super.initState();
     _currentDuration = widget.initialDuration;
-    _remainingSeconds = _currentDuration;
+    _remainingDuration = _currentDuration;
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: (_currentDuration * 1000).round()),
+      duration:
+          Duration(milliseconds: (_currentDuration.inMilliseconds).round()),
     );
     _animation = Tween<double>(begin: 1, end: 0).animate(_controller);
 
@@ -168,32 +172,54 @@ class _ProgressBarCountdownState extends State<ProgressBarCountdown>
     _countdownController!._state = this;
   }
 
-  void _resetTimer({double? duration}) {
+  void _resetTimer({Duration? duration}) {
     _controller.stop();
     if (_timer != null && _timer!.isActive) {
       _timer!.cancel();
     }
     setState(() {
       _currentDuration = duration ?? widget.initialDuration;
-      _remainingSeconds = _currentDuration;
+      _remainingDuration = _currentDuration;
       _isRunning = false;
     });
     _controller.duration =
-        Duration(milliseconds: (_currentDuration * 1000).round());
+        Duration(milliseconds: (_currentDuration.inMilliseconds).round());
     _controller.reset();
+  }
+
+  String defaultTimeFormatter(Duration duration) {
+    if (duration.inSeconds >= 1) {
+      return duration.inSeconds.toString();
+    } else {
+      // Display milliseconds with 3 decimal places when less than 1 second
+      return (duration.inMilliseconds / 1000).toStringAsFixed(3);
+    }
+  }
+
+  String _formatTime(Duration duration) {
+    if (widget.timeFormatter != null) {
+      return widget.timeFormatter!(duration);
+    } else {
+      return defaultTimeFormatter(duration);
+    }
   }
 
   void _startTimer() {
     if (_isRunning) return;
     widget.onStart?.call();
-    _controller.forward(from: 1 - (_remainingSeconds / _currentDuration));
+    _controller.forward(
+        from: 1 -
+            (_remainingDuration.inMilliseconds /
+                _currentDuration.inMilliseconds));
     _isRunning = true;
-    _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+    _timer = Timer.periodic(const Duration(milliseconds: 10), (timer) {
       setState(() {
-        _remainingSeconds = _currentDuration * (1 - _controller.value);
-        widget.onChange?.call(
-            _remainingSeconds.toStringAsFixed(_remainingSeconds > 1 ? 0 : 1));
-        if (_remainingSeconds <= 0) {
+        _remainingDuration = _currentDuration * (1 - _controller.value);
+        widget.onChange?.call(_formatTime(_remainingDuration)
+            // _remainingDuration.inSeconds
+            // .toStringAsFixed(_remainingDuration.inSeconds > 1 ? 0 : 1)
+            );
+        if (_remainingDuration.inMilliseconds <= 0) {
           _isRunning = false;
           timer.cancel();
           widget.onComplete?.call();
@@ -295,8 +321,9 @@ class _ProgressBarCountdownState extends State<ProgressBarCountdown>
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Text(
-                              _remainingSeconds.toStringAsFixed(
-                                  _remainingSeconds > 1 ? 0 : 1),
+                              _formatTime(_remainingDuration),
+                              // _remainingDuration.inSeconds.toStringAsFixed(
+                              //     _remainingDuration.inSeconds > 1 ? 0 : 1),
                               style: widget.textStyle
                                   .copyWith(color: Colors.white),
                               textAlign: TextAlign.center,
