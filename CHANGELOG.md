@@ -1,4 +1,8 @@
-## 0.0.2 - 2024/09/28
+## 0.0.3 - 2024/09/30
+
+* Corrected README following 0.0.2 changes
+
+## 0.0.2 - 2024/09/29
 
 * Changed the `initialSeconds` parameter to `initialDuration`.
     * Changed the format from double to a `Duration()`

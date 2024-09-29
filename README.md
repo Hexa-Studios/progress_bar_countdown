@@ -7,8 +7,9 @@ Create an animated linear progress bar countdown timer using Progress Bar Countd
 * Forward and reverse countdown timer
 * Start, pause, resume, and reset timer functionality
 * Customizable colors and styles
-* Option to show/hide countdown text
 * Left-to-right or right-to-left progress direction
+* Option to format the countdown timer string
+* Option to show/hide countdown text
 
 ![Example Progress Bar Countdown GIF](https://github.com/Hexa-Studios/progress_bar_countdown/blob/main/doc/progress_bar_countdown_gif.gif?raw=true)
 
@@ -18,14 +19,14 @@ To use this plugin, add `progress_bar_countdown` as a [dependency in your pubspe
 
 ```yaml
 dependencies:
-  progress_bar_countdown: ^0.0.1
+  progress_bar_countdown: ^0.0.2
 ```
 
 ## Usage
 
 ```dart
 ProgressBarCountdown(
-  initialDuration: 60,
+  initialDuration: Duration(seconds: 60),
   progressColor: Colors.blue,
   progressBackgroundColor: Colors.grey[300]!,
   initialTextColor: Colors.black,
@@ -44,6 +45,20 @@ ProgressBarCountdown(
   onChange: (String timeStamp) {
     print('Countdown Changed $timeStamp');
   },
+  timeFormatter: (Duration remainingTime) {
+    final minutes = remainingTime.inMinutes
+        .remainder(60)
+        .toString()
+        .padLeft(2, '0');
+    final seconds = remainingTime.inSeconds
+        .remainder(60)
+        .toString()
+        .padLeft(2, '0');
+    final milliseconds = (remainingTime.inMilliseconds % 1000 ~/ 10)
+        .toString()
+        .padLeft(2, '0');
+    return '$minutes:$seconds:$milliseconds';
+  }
 )
 ```
 
@@ -51,7 +66,7 @@ ProgressBarCountdown(
 
 | Name | Type | Default Value | Description |
 |:-----|:-----|:--------------|:------------|
-| `initialDuration` | `double` | required | Countdown duration in seconds. |
+| `initialDuration` | `Duration` | required | Countdown duration in seconds. |
 | `progressColor` | `Color` | required | Color of the progress bar. |
 | `progressBackgroundColor` | `Color` | `Colors.white` | Background color of the progress bar. |
 | `initialTextColor` | `Color?` | null | Initial color of the countdown text. |
@@ -65,6 +80,7 @@ ProgressBarCountdown(
 | `onComplete` | `VoidCallback?` | null | Callback executed when the countdown completes. |
 | `onStart` | `VoidCallback?` | null | Callback executed when the countdown starts. |
 | `onChange` | `ValueChanged<String>?` | null | Callback executed when the countdown value changes. |
+| `textFormatter` | `String Function(Duration remainingTime)?` | null | Callback executed when the countdown value changes. |
 
 ## ProgressBarCountdownController
 
@@ -131,7 +147,7 @@ class MyApp extends StatelessWidget {
         appBar: AppBar(title: Text('Progress Bar Countdown Example')),
         body: Center(
           child: ProgressBarCountdown(
-            initialDuration: 60,
+            initialDuration: Duration(seconds: 60),
             progressColor: Colors.blue,
             progressBackgroundColor: Colors.grey[300]!,
             initialTextColor: Colors.black,
@@ -149,6 +165,20 @@ class MyApp extends StatelessWidget {
             },
             onChange: (String timeStamp) {
               print('Countdown Changed $timeStamp');
+            },
+            timeFormatter: (Duration remainingTime) {
+              final minutes = remainingTime.inMinutes
+                  .remainder(60)
+                  .toString()
+                  .padLeft(2, '0');
+              final seconds = remainingTime.inSeconds
+                  .remainder(60)
+                  .toString()
+                  .padLeft(2, '0');
+              final milliseconds = (remainingTime.inMilliseconds % 1000 ~/ 10)
+                  .toString()
+                  .padLeft(2, '0');
+              return '$minutes:$seconds:$milliseconds';
             },
           ),
         ),

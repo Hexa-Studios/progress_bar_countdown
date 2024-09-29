@@ -1,6 +1,6 @@
 name: progress_bar_countdown
 description: "An animated timer that counts down like a progress bar"
-version: 0.0.2
+version: 0.0.3
 homepage: https://github.com/Hexa-Studios/progress_bar_countdown
 
 environment:
